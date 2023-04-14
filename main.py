@@ -25,10 +25,17 @@ for id in range(ayah_start, ayah_end+1):
     concat_file.write('file %s\n' % f"'./data/output/video_ayah_{id}.mp4'")
 
 concat_file.close()
-time.sleep(5)
-ffmpeg.input('concat.txt', format='concat', safe=0).output('data/output/output.mp4').run(overwrite_output=True)
-for i in range(ayah_start, ayah_end+1):
-    os.remove(f'data/output/video_ayah_{i}.mp4')
+
+if ayah_start == ayah_end:
+    os.rename(
+        f'data/output/video_ayah_{ayah_start}.mp4',
+        f'data/output/output.mp4'
+    )
+else:
+    ffmpeg.input('concat.txt', format='concat', safe=0).output('data/output/output.mp4').run(overwrite_output=True)
+
+    for i in range(ayah_start, ayah_end+1):
+        os.remove(f'data/output/video_ayah_{i}.mp4')
 os.remove('concat.txt')
 
 print('\n\n\n\nSUCCEED!!\n\n\n\n')
