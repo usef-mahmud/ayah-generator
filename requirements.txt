@@ -1,4 +1,3 @@
 requests
 ffmpeg-python
 pillow
-textwrap
