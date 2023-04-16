@@ -1,0 +1,4 @@
+requests
+ffmpeg-python
+PIL
+textwrap

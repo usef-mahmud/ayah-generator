@@ -2,6 +2,9 @@ import requests, os, textwrap
 from PIL import Image, ImageDraw, ImageFont
 import ffmpeg
 
+#muhammadjibreel
+#shaatree
+
 def get_data(surah, ayah):
     res = requests.get(f'http://api.alquran.cloud/v1/ayah/{surah}:{ayah}/ar.shaatree').json()
 
