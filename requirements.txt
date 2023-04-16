@@ -1,4 +1,4 @@
 requests
 ffmpeg-python
-PIL
+pillow
 textwrap
