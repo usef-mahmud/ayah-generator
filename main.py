@@ -24,7 +24,7 @@ for id in range(ayah_start, ayah_end+1):
 if ayah_start == ayah_end:
     os.rename(
         f'data/output/video_ayah_{ayah_start}.mp4',
-        f'data/output/output3.mp4'
+        f'data/output/output.mp4'
     )
 else:
 
