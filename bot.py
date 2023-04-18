@@ -141,7 +141,7 @@ def callback_data(call):
     if call.message:
         if call.data in [f'surah_{id}' for id in range(1, 115)]:
             surah_id = call.data.split('_')[1]
-            bot.reply_to(call.message, text=surah_id)
+            bot.reply_to(call.message, text='اختر الآيات المراد تصميمها')W
         
 
 bot.infinity_polling()

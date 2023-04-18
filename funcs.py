@@ -8,10 +8,13 @@ import ffmpeg
 # shaatree
 # alafasy
 
+proxies = {
+    'https': 'https://167.71.43.43'
+}
 
 def get_data(surah, ayah):
     res = requests.get(
-        f'http://api.alquran.cloud/v1/ayah/{surah}:{ayah}/ar.alafasy').json()
+        f'http://api.alquran.cloud/v1/ayah/{surah}:{ayah}/ar.alafasy', proxies=proxies).json()
 
     return {
         'audio': res['data']['audio'],
@@ -43,7 +46,7 @@ def craete_image(text, ayah_id):
 
 
 def download_audio(url, ayah_id):
-    res = requests.get(url)
+    res = requests.get(url, proxies=proxies)
     open(f'data/audio/ayah_{ayah_id}.mp3', 'wb').write(res.content)
 
 
