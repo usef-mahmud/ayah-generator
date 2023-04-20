@@ -1,5 +1,4 @@
 from funcs import *
-import ffmpeg
 import moviepy.editor as mp
 
 surah_id = int(input('enter surah number: \n'))
@@ -11,13 +10,12 @@ for id in range(ayah_start, ayah_end+1):
     ayah = get_data(surah_id, id)
 
     download_audio(ayah['audio'], id)
-    craete_image(ayah['text'], id)
+    create_image(ayah['text'], id)
 
     combine_audio_image(
         f'data/audio/ayah_{id}.mp3',
         f'data/images/ayah_{id}.png',
         f'video_ayah_{id}',
-        
     )
 
 
@@ -33,7 +31,4 @@ else:
 
     for i in range(ayah_start, ayah_end+1):
         os.remove(f'data/output/video_ayah_{i}.mp4')
-
-print('\n\n\n\nSUCCEED!!\n\n\n\n')
-
 

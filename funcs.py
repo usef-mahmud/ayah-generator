@@ -20,7 +20,7 @@ def get_data(surah, ayah):
     }
 
 
-def craete_image(text, ayah_id):
+def create_image(text, ayah_id):
     font = ImageFont.truetype('data/fonts/UthmanicHafs.ttf', 70)
 
     lines = textwrap.wrap(text, width=115)
