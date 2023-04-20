@@ -9,9 +9,9 @@ import ffmpeg
 # alafasy
 
 
-def get_data(surah, ayah):
+def get_data(surah, ayah, recruiter_id):
     res = requests.get(
-        f'http://api.alquran.cloud/v1/ayah/{surah}:{ayah}/ar.shaatree').json()
+        f'http://api.alquran.cloud/v1/ayah/{surah}:{ayah}/ar.{recruiter_id}').json()
 
     return {
         'audio': res['data']['audio'],

@@ -8,6 +8,10 @@ bot = telebot.TeleBot(TOKEN)
 f = open('data/users.json')
 data = json.load(f)
 
+chat_status = {
+    "active": True
+}
+
 surahs = [
     {"surah": 1, "name": "الفاتحة", "ayahs": 7},
     {"surah": 2, "name": "البقرة", "ayahs": 286},
@@ -125,10 +129,37 @@ surahs = [
     {"surah": 114, "name": "الناس", "ayahs": 6}
 ]
 
+recruiters = [
+    {
+        'name': 'عبدالرحمن السديس',
+        'id': 'abdurrahmaansudais'
+    },{
+        'name': 'أبو بكر الشاطري',
+        'id': 'shaatree'
+    },{
+        'name': 'أحمد بن علي العجمي',
+        'id': 'ahmedajamy'
+    },{
+        'name': 'مشاري العفاسي',
+        'id': 'alafasy'
+    },{
+        'name': 'الحصري',
+        'id': 'husary'
+    },{
+        'name': 'ماهر المعيقلي',
+        'id': 'mahermuaiqly'
+    },{
+        'name': 'محمد جبريل',
+        'id': 'muhammadjibreel'
+    },{
+        'name': 'ماهر المعيقلي',
+        'id': 'mahermuaiqly'
+    },
+]
 
 @bot.message_handler(commands=['start'])
 def send_message(msg):
-    markup = types.ReplyKeyboardMarkup()
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
     markup.add(types.KeyboardButton('اختر السورة'))
     bot.send_message(
         msg.chat.id, 'أهلا بك\nيمكنك البدء في تصميم الفيديوهات عن طريق هذا الزر', reply_markup=markup)
@@ -137,34 +168,23 @@ def send_message(msg):
 @bot.message_handler()
 def keyboard_res(msg):
     if msg.text == 'اختر السورة':
-        data.append({
-            "chat": msg.chat.id
-        })
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        for i in range(0, len(surahs)):
-            if i % 2 == 0 and i != 0:
-                markup.row(
-                    types.InlineKeyboardButton(
-                        surahs[i-1]['name'], callback_data=f'surah_{surahs[i-1]["surah"]}'),
-                    types.InlineKeyboardButton(
-                        surahs[i]['name'], callback_data=f'surah_{surahs[i]["surah"]}')
-                )
-        bot.send_message(
-            msg.chat.id, 'قم باختيار سورة من القائمة', reply_markup=markup)
-
-
-@bot.callback_query_handler(lambda call: True)
-def callback_data(call):
-    if call.message:
-        if call.data in [f'surah_{id}' for id in range(1, 115)]:
-            surah_id = int(call.data.split('_')[1])
-            chats_id = [i for i, e in enumerate(
-                data) if e['chat'] == call.message.chat.id]
-            data[chats_id[len(chats_id)-1]]['surah'] = surah_id
-            next_msg = bot.send_message(
-                call.message.chat.id, f"أدخل الآيات من 1 إلى {surahs[surah_id]['ayahs']}")
-            bot.register_next_step_handler(next_msg, get_start_ayah)
-
+        if chat_status['active']:
+            data.append({
+                "chat": msg.chat.id
+            })
+            markup = types.InlineKeyboardMarkup(row_width=2)
+            for i in range(0, len(surahs)):
+                if i % 2 == 0 and i != 0:
+                    markup.row(
+                        types.InlineKeyboardButton(
+                            surahs[i-1]['name'], callback_data=f'surah_{surahs[i-1]["surah"]}'),
+                        types.InlineKeyboardButton(
+                            surahs[i]['name'], callback_data=f'surah_{surahs[i]["surah"]}')
+                    )
+            bot.send_message(
+                msg.chat.id, 'قم باختيار سورة من القائمة', reply_markup=markup)
+        else:
+            bot.send_message(msg.chat.id, 'هناك شخص آخر يستخدم البرنامج في الوقت الحالي، يرجى المحاولة لاحقا')
 
 def get_start_ayah(msg):
     chats_id = [i for i, e in enumerate(data) if e['chat'] == msg.chat.id]
@@ -176,47 +196,76 @@ def get_start_ayah(msg):
 def get_end_ayah(msg):
     chats_id = [i for i, e in enumerate(data) if e['chat'] == msg.chat.id]
     data[chats_id[len(chats_id)-1]]['end_ayah'] = int(msg.text)
-    with open('data/users.json', 'w') as f:
-        f.write(json.dumps(data))
-    bot.send_message(msg.chat.id, 'سيتم تجهيز الفيديو خلال لحظات')
+
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    for recruiter in recruiters:
+        markup.add(types.InlineKeyboardButton(recruiter['name'], callback_data=f'recruiter_{recruiter["id"]}'))
+    bot.send_message(
+        msg.chat.id, 'اختر اسم القارئ', reply_markup=markup)
+
     
-    loading_msg = bot.send_message(msg.chat.id, 'جاري تصميم الفيديو....')
+@bot.callback_query_handler(lambda call:True)
+def callback_recruiter(call):
+    if call.message:
 
-    current = data[chats_id[len(chats_id)-1]]
-    try:
-        for id in range(current['start_ayah'], current['end_ayah']+1):
-            ayah = get_data(current['surah'], id)
-            print(ayah)
-            create_image(ayah['text'], id)
-            download_audio(ayah['audio'], id)
+        if 'recruiter' in call.data:
+            print(call.data)
+            chats_id = [i for i, e in enumerate(data) if e['chat'] == call.message.chat.id]
+            data[chats_id[len(chats_id)-1]]['recruiter'] = call.data.split('_')[1]
+            with open('data/users.json', 'w') as f:
+                f.write(json.dumps(data))
+            bot.send_message(call.message.chat.id, 'سيتم تجهيز الفيديو خلال لحظات')
+            
+            loading_msg = bot.send_message(call.message.chat.id, 'جاري تصميم الفيديو....')
 
-            combine_audio_image(
-                f'data/audio/ayah_{id}.mp3',
-                f'data/images/ayah_{id}.png',
-                f'video_ayah_{id}',
-            )
+            current = data[chats_id[len(chats_id)-1]]
+            try:
+                chat_status['active'] = False
+                for id in range(current['start_ayah'], current['end_ayah']+1):
+                    ayah = get_data(current['surah'], id, current['recruiter'])
+                    print(ayah)
+                    create_image(ayah['text'], id)
+                    download_audio(ayah['audio'], id)
 
-        if current['start_ayah'] == current['end_ayah']:
-            concat_clip = mp.concatenate_videoclips([mp.VideoFileClip(f'data/output/video_ayah_{current["start_ayah"]}.mp4').crossfadein(1.0).crossfadeout(1.0)], method='compose')
-            concat_clip.write_videofile('data/output/output.mp4', fps=24, threads=8)
+                    combine_audio_image(
+                        f'data/audio/ayah_{id}.mp3',
+                        f'data/images/ayah_{id}.png',
+                        f'video_ayah_{id}',
+                    )
 
-            os.remove(f'data/output/video_ayah_{current["start_ayah"]}.mp4')
-        else:
-            concat_clip = mp.concatenate_videoclips([mp.VideoFileClip(name).crossfadein(2.0).crossfadeout(2.0) for name in [f'data/output/video_ayah_{i}.mp4' for i in range(current['start_ayah'], current['end_ayah']+1)]], method='compose')
-            concat_clip.write_videofile('data/output/output.mp4', fps=24, threads=8)
+                if current['start_ayah'] == current['end_ayah']:
+                    concat_clip = mp.concatenate_videoclips([mp.VideoFileClip(f'data/output/video_ayah_{str(current["start_ayah"])}.mp4').crossfadein(1.0).crossfadeout(1.0)], method='compose')
+                    concat_clip.write_videofile('data/output/output.mp4', fps=24, threads=8)
 
-            for i in range(current["start_ayah"], current["end_ayah"]+1):
-                os.remove(f'data/output/video_ayah_{i}.mp4')
+                    os.remove(f'data/output/video_ayah_{current["start_ayah"]}.mp4')
+                else:
+                    concat_clip = mp.concatenate_videoclips([mp.VideoFileClip(name).crossfadein(2.0).crossfadeout(2.0) for name in [f'data/output/video_ayah_{str(i)}.mp4' for i in range(current['start_ayah'], current['end_ayah']+1)]], method='compose')
+                    concat_clip.write_videofile('data/output/output.mp4', fps=24, threads=8)
 
-        bot.delete_message(msg.chat.id, loading_msg.message_id)
-        bot.send_video(msg.chat.id, open('data/output/output.mp4', 'rb'))
+                    for i in range(current["start_ayah"], current["end_ayah"]+1):
+                        os.remove(f'data/output/video_ayah_{i}.mp4')
 
-    except Exception as e:
-        print(e)
-        bot.delete_message(msg.chat.id, loading_msg.message_id)
-        bot.send_message(msg.chat.id, 'تعذر تحميل الفيديو\nيمكنك اعادة المحاولة لاحقا')
+                bot.delete_message(call.message.chat.id, loading_msg.message_id)
+                bot.send_video(call.message.chat.id, open('data/output/output.mp4', 'rb'))
+                chat_status['active'] = True
 
-   
+            except Exception as e:
+                print(e)
+                bot.delete_message(call.message.chat.id, loading_msg.message_id)
+                bot.send_message(call.message.chat.id, 'تعذر تحميل الفيديو\nيمكنك اعادة المحاولة لاحقا')
+                chat_status['active'] = True
+
+        elif 'surah' in call.data:
+            if chat_status['active']:
+                surah_num = int(call.data.split('_')[1])
+                chats_id = [i for i, e in enumerate(
+                    data) if e['chat'] == call.message.chat.id]
+                data[chats_id[len(chats_id)-1]]['surah'] = surah_num
+                next_msg = bot.send_message(call.message.chat.id, f"أدخل الآيات من 1 إلى {surahs[surah_num-1]['ayahs']}")
+                bot.register_next_step_handler(next_msg, get_start_ayah)
+            else:
+                bot.send_message(call.message.chat.id, 'هناك شخص آخر يستخدم البرنامج في الوقت الحالي، يرجى المحاولة لاحقا')
+    
     
 
         
