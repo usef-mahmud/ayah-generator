@@ -1,9 +1,9 @@
-import telebot, json, os
+import telebot, json, os, time
 from telebot import types
 from funcs import *
 import moviepy.editor as mp
 
-TOKEN = '5864755813:AAGtAx1aYMJGUCPuMWt0wiSjbZ_5FiaEZ5A'
+TOKEN = '6015624747:AAHqMKfm2yn3CiCFPAoAl0L2B2Jdze0D-YM'
 bot = telebot.TeleBot(TOKEN)
 f = open('data/users.json')
 data = json.load(f)
@@ -242,6 +242,7 @@ def callback_recruiter(call):
                     concat_clip = mp.concatenate_videoclips([mp.VideoFileClip(name).crossfadein(2.0).crossfadeout(2.0) for name in [f'data/output/video_ayah_{str(i)}.mp4' for i in range(current['start_ayah'], current['end_ayah']+1)]], method='compose')
                     concat_clip.write_videofile('data/output/output.mp4', fps=24, threads=8)
 
+                    time.sleep(1)
                     for i in range(current["start_ayah"], current["end_ayah"]+1):
                         os.remove(f'data/output/video_ayah_{i}.mp4')
 

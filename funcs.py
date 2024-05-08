@@ -3,6 +3,8 @@ import os
 import textwrap
 from PIL import Image, ImageDraw, ImageFont
 import ffmpeg
+from bidi.algorithm import get_display
+import arabic_reshaper
 
 # muhammadjibreel
 # shaatree
@@ -26,7 +28,8 @@ def create_image(text, ayah_id):
     lines = textwrap.wrap(text, width=115)
     lines_h = 0
     for line in lines:
-        h = font.getsize(line)[1]
+        h = font.getbbox(line)[3]
+
         lines_h += h
 
     img = Image.new('RGB', (1920, lines_h+300+((len(lines))*20)))
@@ -34,9 +37,13 @@ def create_image(text, ayah_id):
 
     font_top = 170
     for line in lines:
-        w, h = font.getsize(line)
+        w = font.getbbox(line)[2]
+        h = font.getbbox(line)[3]
 
-        draw.text(((img.width-w)/2, font_top), line, font=font, align='center')
+        unicode_text_reshaped = arabic_reshaper.reshape(u'{line}')
+        unicode_text_reshaped_RTL = get_display(unicode_text_reshaped , base_dir='R')
+
+        draw.text(((img.width-w)/2, font_top), unicode_text_reshaped_RTL, font=font, align='center')
         font_top += (h+20)
 
     img.save(f'data/images/ayah_{ayah_id}.png')

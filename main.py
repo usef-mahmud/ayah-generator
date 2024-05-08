@@ -7,7 +7,7 @@ ayah_start = int(ayahs.split('-')[0])
 ayah_end= int(ayahs.split('-')[1])
 
 for id in range(ayah_start, ayah_end+1):
-    ayah = get_data(surah_id, id)
+    ayah = get_data(surah_id, id, 'shaatree') # chhange the id of the reciters from here
 
     download_audio(ayah['audio'], id)
     create_image(ayah['text'], id)
